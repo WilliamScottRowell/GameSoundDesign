@@ -4,38 +4,31 @@ using UnityEngine;
 
 public class SimplePlayerController : MonoBehaviour
 {
-    // Variables for movement
+    // Movement variables
     public float mouseSensitivity = 100f;
-    public float speed = 12f;
+    public float speed = 5f;
 
     public Transform playerBody;
     public CharacterController controller;
 
-    // Variables for gravity
+    // Gravity variables
     public Vector3 velocity;
     public float gravity = -9.81f;
+    private float groundDistance = 0.1f; // Small buffer for ground detection
 
-    // Variables for jumping
-    public float jumpHeight = 5f;
-    public float charHeight = 1.2f;
-    public bool isGrounded = false;
+    // Jumping variables
+    public float jumpHeight = 1.5f;
+    private bool isGrounded;
 
     // Audio
     public AudioSource jumpSound;
 
-    // Update is called once per frame
     void Update()
     {
-        
-        
-    }
-
-    private void FixedUpdate()
-    {
-        PlayerMover();
-        ApplyGravity();
-        ProcessRaycast();
-        ProcessJumping();
+        ProcessGroundCheck(); // Check if player is on the ground
+        PlayerMover(); // Handle movement
+        ProcessJumping(); // Handle jumping
+        ApplyGravity(); // Handle gravity
     }
 
     void PlayerMover()
@@ -44,7 +37,7 @@ public class SimplePlayerController : MonoBehaviour
         float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity * Time.deltaTime;
         playerBody.Rotate(Vector3.up * mouseX);
 
-        // Move player based on keyboard presses
+        // Move player based on keyboard input
         float x = Input.GetAxis("Horizontal");
         float z = Input.GetAxis("Vertical");
 
@@ -56,7 +49,7 @@ public class SimplePlayerController : MonoBehaviour
     {
         if (isGrounded && velocity.y < 0)
         {
-            velocity.y = 0f;
+            velocity.y = -2f; // Small force to keep grounded detection stable
         }
 
         velocity.y += gravity * Time.deltaTime;
@@ -65,31 +58,25 @@ public class SimplePlayerController : MonoBehaviour
 
     void ProcessJumping()
     {
-        if(Input.GetButtonDown("Jump") && isGrounded)
+        if (Input.GetButtonDown("Jump") && isGrounded)
         {
             velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
-            isGrounded = false;
-            if(jumpSound != null)
+            isGrounded = false; // Temporarily set to false to prevent double jumps
+
+            if (jumpSound != null)
             {
                 jumpSound.Play();
-            }                
+            }
         }
     }
 
-    void ProcessRaycast()
+    void ProcessGroundCheck()
     {
-        RaycastHit hit;
+        isGrounded = controller.isGrounded; // Use built-in Unity function
 
-        Debug.DrawRay(transform.position, transform.TransformDirection(Vector3.down), Color.red, charHeight);
-
-        if (Physics.Raycast(transform.position, transform.TransformDirection(Vector3.down), charHeight))
+        if (isGrounded && velocity.y < 0)
         {
-            Debug.Log("Hit ground!");
-            isGrounded = true;
-        }
-        else
-        {
-            isGrounded = false;
+            velocity.y = -2f; // Ensures stick to ground
         }
     }
 }
