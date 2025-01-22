@@ -5,7 +5,7 @@ using UnityEngine;
 public class SimplePlayerController : MonoBehaviour
 {
     // Movement variables
-    public float mouseSensitivity = 100f;
+    public float mouseSensitivity = 500f;
     public float speed = 5f;
 
     public Transform playerBody;
